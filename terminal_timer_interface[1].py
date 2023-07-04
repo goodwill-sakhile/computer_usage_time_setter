@@ -207,7 +207,7 @@ class TerminalUsageTimeSetterBox(MDBoxLayout):
 		self.ids.one_hour_box.md_bg_color = [0, 0, 0, 1]
 	def countDown(self, minutes):
 		self.count_down_time += minutes
-		self.ids.count_down_time_label.text = 
+		#self.ids.count_down_time_label.text = 
 class TerminalOneScreen(MDScreen):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -235,4 +235,4 @@ class TerminalTimerApp(MDApp):
 		root = MainBox()
 		return root
 if __name__ == "__main__":
-	TerminalTimerApp().run()
+	TerminalTimerApp().run(
