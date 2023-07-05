@@ -1,8 +1,11 @@
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.screen import MDScreen
+from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from touch import TouchBox
+from client_side_script import sendMessageToServer
+import _thread as thread
 ui  = Builder.load_string("""
 <TerminalUsageTimeSetterBox>:
 	id:terminal_usage_time_setter
@@ -113,7 +116,7 @@ ui  = Builder.load_string("""
 		orientation:"vertical"
 		TerminalUsageTimeSetterBox:
 <TerminalTwoScreen>:
-	name:"termimal_two"
+	name:"terminal_two"
 	MDBoxLayout:
 		orientation:"vertical"
 		TerminalUsageTimeSetterBox:
@@ -135,8 +138,10 @@ ui  = Builder.load_string("""
 				padding:"5dp", "10dp"
 				spacing:10
 				TerminalOneButton:
+					id:terminal_one_button
+					root:main_box
 					md_bg_color:[0, 154/float(255), 255/float(255), 1]
-					radius:[20, 20, 20, 20]
+					radius:[10, 10, 10, 10]
 					MDLabel:
 						text:"Terminal One"
 						text_size:self.size
@@ -144,8 +149,10 @@ ui  = Builder.load_string("""
 						valign:"middle"
 						color:[1, 1, 1, 1]
 				TerminalTwoButton:
+					id:terminal_two_button
+					root:main_box
 					md_bg_color:[190/float(255), 190/float(255), 190/float(255), 1]
-					radius:[20, 20, 20, 20]
+					radius:[10, 10, 10, 10]
 					MDLabel:
 						text:"Terminal Two"
 						text_size:self.size
@@ -154,6 +161,7 @@ ui  = Builder.load_string("""
 						color:[1, 1, 1, 1]
 			MDBoxLayout:
 				ScreenManager:
+					id:terminals_screen_manager
 					TerminalOneScreen:
 					TerminalTwoScreen:
 		MDBoxLayout:
@@ -162,7 +170,7 @@ ui  = Builder.load_string("""
 			spacing:5
 			padding:10
 			RestartTerminalButtonBox:
-				radius:[40, 40, 40, 40]
+				radius:[10, 10, 10, 10]
 				root:main_box
 				md_bg_color:[0, 0, 0, 1]
 				MDLabel:
@@ -172,7 +180,7 @@ ui  = Builder.load_string("""
 					valign:"middle"
 					color:[1, 1, 1, 1]
 			ShutDownTerminalButtonBox:
-				radius:[40, 40, 40, 40]
+				radius:[10, 10, 10, 10]
 				root:main_box
 				md_bg_color:[0, 0, 0, 1]
 				MDLabel:
@@ -186,17 +194,17 @@ class FifteenMinutesSetButtonBox(TouchBox):
 	def respondToTouch(self):
 		self.root.turnAllTimeSetterButtonsBlack()
 		self.md_bg_color = [0, 154/float(255), 255/float(255), 1]
-		self.root.count_down_time(15)
+		self.root.countDown(15)
 class ThirtyMinutesSetButtonBox(TouchBox):
 	def respondToTouch(self):
 		self.root.turnAllTimeSetterButtonsBlack()
 		self.md_bg_color = [0, 154/float(255), 255/float(255), 1]
-		self.root.count_down_time(30)
+		self.root.countDown(30)
 class OneHourSetButtonBox(TouchBox):
 	def respondToTouch(self):
 		self.root.turnAllTimeSetterButtonsBlack()
 		self.md_bg_color = [0, 154/float(255), 255/float(255), 1]
-		self.root.count_down_time(60)
+		self.root.countDown(60)
 class TerminalUsageTimeSetterBox(MDBoxLayout):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -208,6 +216,25 @@ class TerminalUsageTimeSetterBox(MDBoxLayout):
 	def countDown(self, minutes):
 		self.count_down_time += minutes
 		#self.ids.count_down_time_label.text = 
+	def countDownSeconds(self, seconds, string_minutes, string_hour):
+		while seconds  >= 0:
+			time.sleep(1)
+			seconds = seconds - 1
+			if seconds < 10:
+				string_seconds = "0" + str(seconds)
+			else:
+				string_seconds = str(seconds)
+			self.ids.count_down_time_label.text = string_hour + ":" + string_minutes + ":"  + string_seconds
+	def countDownMinutes(self, minutes, string_hour):
+		while minutes > 0:
+			time.sleep(1)
+			minutes = minutes - 1
+			if minutes < 10:
+				string_minutes  = "0" + str(minutes)
+			else:
+				string_minutes = str(minutes)
+			self.ids.count_down_time_label.text = string_hour + ":" + string_minutes + ":" + str(59)
+			self.countDownSeconds(59, string_minutes, string_hour)
 class TerminalOneScreen(MDScreen):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -218,21 +245,29 @@ class TerminalTwoScreen(MDScreen):
 		self.ip_address = "192.168.0.24"
 class TerminalOneButton(TouchBox):
 	def respondToTouch(self):
-		pass
+		self.root.turnTerminalButtonsGrey()
+		self.md_bg_color = [0, 154/float(255), 255/float(255), 1]
+		self.root.ids.terminals_screen_manager.transition = SlideTransition(direction = "right")
+		self.root.ids.terminals_screen_manager.current = "terminal_one"
 class TerminalTwoButton(TouchBox):
 	def respondToTouch(self):
-		pass
+		self.root.turnTerminalButtonsGrey()
+		self.md_bg_color = [0, 154/float(255), 255/float(255), 1]
+		self.root.ids.terminals_screen_manager.transition = SlideTransition(direction = "left")
+		self.root.ids.terminals_screen_manager.current = "terminal_two"
 class RestartTerminalButtonBox(TouchBox):
 	def respondToTouch(self):
-		pass
+		thread.start_new_thread(sendMessageToServer, (b'Restart', ))
 class ShutDownTerminalButtonBox(TouchBox):
 	def respondToTouch(self):
-		pass
+		thread.start_new_thread(sendMessageToServer, (b'Shutdown', ))
 class MainBox(MDBoxLayout):
-	pass
+	def turnTerminalButtonsGrey(self):
+		self.ids.terminal_one_button.md_bg_color = [190/float(255), 190/float(255), 190/float(255), 1]
+		self.ids.terminal_two_button.md_bg_color = [190/float(255), 190/float(255), 190/float(255), 1]
 class TerminalTimerApp(MDApp):
 	def build(self):
 		root = MainBox()
 		return root
 if __name__ == "__main__":
-	TerminalTimerApp().run(
+	TerminalTimerApp().run()
