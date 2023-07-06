@@ -1,6 +1,6 @@
 from socket import *
 def getIpAndPort():
-	ip = input("Enter ip address: ")
+	ip = ""
 	return ip, 50007
 def getMessage(message):
 	return message
@@ -14,9 +14,9 @@ def connectAndSendMessage(socket_object, ip, port, message):
 		data = socket_object.recv(1024)
 		print(data)
 	socket_object.close
-def runClient():
+def sendMessageToServer(message_to_server):
 	ip, port = getIpAndPort()
-	message = getMessage([b'ghdjdjfjb'])
+	#message = getMessage([message_to_server)
 	socket_object = setSocketObject()
-	connectAndSendMessage(socket_object, ip, port, message)
-runClient()
+	connectAndSendMessage(socket_object, ip, port, message_to_server)
+sendMessageToServer(b'shsjjfkf')
