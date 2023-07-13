@@ -1,6 +1,6 @@
 from socket import *
 def getIpAndPort():
-	ip = "192.168.0.25"
+	ip = "192.168.0.24"
 	return ip, 50007
 def getMessage(message):
 	return message
