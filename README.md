@@ -15,6 +15,5 @@ CafeTimeManager is a full-featured C# application designed for internet café ow
 
 ---
 
-## Project Structure
 
 
